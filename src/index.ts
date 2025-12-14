@@ -35,3 +35,13 @@ export async function getAlbums(): Promise<import('./types').Album[]> {
   
   return Object.values(albums);
 }
+
+export async function searchAudios(query: string): Promise<import('./types').AudioAsset[]> {
+  const audios = await getAllAudios();
+  const lowerQuery = query.toLowerCase();
+  
+  return audios.filter(audio => 
+    (audio.title && audio.title.toLowerCase().includes(lowerQuery)) ||
+    (audio.artist && audio.artist.toLowerCase().includes(lowerQuery))
+  );
+}

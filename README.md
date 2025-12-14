@@ -59,6 +59,10 @@ console.log(songs[0]); // { title: "Song 1", artist: "Artist", uri: "..." }
 const queue = new AudioQueue();
 queue.playList(songs, 0); // Start playing first song
 
+// Search example
+const searchResults = await searchAudios("Love");
+console.log("Found:", searchResults.length);
+
 // 3. Control
 queue.next();
 queue.prev();
@@ -172,6 +176,7 @@ const resultPath = await recorder.stop();
 
 - `getAllAudios()`: Returns `Promise<AudioAsset[]>` (Device Scan).
 - `getAlbums()`: Returns `Promise<Album[]>` (Grouped).
+- `searchAudios(query)`: Returns `Promise<AudioAsset[]>` (Search by title/artist).
 
 ## License
 

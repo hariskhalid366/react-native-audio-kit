@@ -10,6 +10,7 @@ A powerful, robust, and feature-rich audio library for React Native. Built with 
 
 ## Features
 
+- ⚡ **New Architecture**: Fully supports TurboModules & Fabric
 - 🔒 **Background Mode**: Keep playing when app is backgrounded or screen locked
 - 🎧 **Controls**: Play, Pause, Seek, Volume, Rate, Loop
 - 🪝 **React Hooks**: `useAudioPlayer` for easy integration
@@ -23,6 +24,18 @@ A powerful, robust, and feature-rich audio library for React Native. Built with 
 npm install react-native-audio-kit
 # or
 yarn add react-native-audio-kit
+```
+
+## ⚡ New Architecture (TurboModules)
+
+This library supports React Native's New Architecture (TurboModules).
+
+- **Android**: Enabled automatically if `newArchEnabled=true` is set in your project's `gradle.properties`.
+- **iOS**: Enabled automatically if you install pods with `RCT_NEW_ARCH_ENABLED=1`.
+
+```bash
+# iOS: Update pods with New Architecture
+cd ios && RCT_NEW_ARCH_ENABLED=1 bundle exec pod install
 ```
 
 ## Setup

@@ -1,5 +1,5 @@
 import { NativeAudio } from './native';
-import { AudioEventEmitter } from './index';
+import { AudioEventEmitter } from "./events";
 import { 
   PlayerOptions, 
   PlaybackStateListener, 

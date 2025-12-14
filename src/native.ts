@@ -30,13 +30,17 @@ export interface NativeAudioType {
   getAudios(): Promise<AudioAsset[]>;
 }
 
-export const NativeAudio: NativeAudioType = NativeModules.ReactNativeAudio
-  ? NativeModules.ReactNativeAudio
-  : new Proxy(
-      {},
-      {
-        get() {
-          throw new Error(LINKING_ERROR);
-        },
-      }
-    );
+export const NativeAudio: NativeAudioType =
+  // @ts-ignore
+  global.__turboModuleProxy != null
+    ? require('./NativeReactNativeAudio').default
+    : NativeModules.ReactNativeAudio
+    ? NativeModules.ReactNativeAudio
+    : new Proxy(
+        {},
+        {
+          get() {
+            throw new Error(LINKING_ERROR);
+          },
+        }
+      );

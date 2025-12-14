@@ -16,7 +16,6 @@ import androidx.media3.exoplayer.ExoPlayer;
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
-import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableMap;
@@ -34,7 +33,7 @@ import android.content.IntentFilter;
 import android.media.AudioManager;
 import android.util.SparseArray;
 
-public class ReactNativeAudioModule extends ReactContextBaseJavaModule {
+public class ReactNativeAudioModule extends ReactNativeAudioSpec {
 
     private final ReactApplicationContext reactContext;
     private final SparseArray<PlayerInstance> players = new SparseArray<>();
@@ -131,9 +130,9 @@ public class ReactNativeAudioModule extends ReactContextBaseJavaModule {
         }
     }
 
-    @ReactMethod
-    public void preparePlayer(Double idVal, String url, ReadableMap options, Promise promise) {
-        int id = idVal.intValue();
+    @Override
+    public void preparePlayer(double idVal, String url, ReadableMap options, Promise promise) {
+        int id = (int) idVal;
 
         // Ensure UI thread for ExoPlayer creation
         new Handler(Looper.getMainLooper()).post(() -> {
@@ -240,9 +239,9 @@ public class ReactNativeAudioModule extends ReactContextBaseJavaModule {
     // ... (play, pause, stop methods remain same: Phase 1.1 is handled by null
     // check in them)
 
-    @ReactMethod
-    public void play(Double idVal, Promise promise) {
-        int id = idVal.intValue();
+    @Override
+    public void play(double idVal, Promise promise) {
+        int id = (int) idVal;
         new Handler(Looper.getMainLooper()).post(() -> {
             PlayerInstance instance = players.get(id);
             if (instance != null) {
@@ -256,9 +255,9 @@ public class ReactNativeAudioModule extends ReactContextBaseJavaModule {
         });
     }
 
-    @ReactMethod
-    public void pause(Double idVal, Promise promise) {
-        int id = idVal.intValue();
+    @Override
+    public void pause(double idVal, Promise promise) {
+        int id = (int) idVal;
         new Handler(Looper.getMainLooper()).post(() -> {
             PlayerInstance instance = players.get(id);
             if (instance != null) {
@@ -275,9 +274,9 @@ public class ReactNativeAudioModule extends ReactContextBaseJavaModule {
         });
     }
 
-    @ReactMethod
-    public void stop(Double idVal, Promise promise) {
-        int id = idVal.intValue();
+    @Override
+    public void stop(double idVal, Promise promise) {
+        int id = (int) idVal;
         new Handler(Looper.getMainLooper()).post(() -> {
             PlayerInstance instance = players.get(id);
             if (instance != null) {
@@ -292,9 +291,9 @@ public class ReactNativeAudioModule extends ReactContextBaseJavaModule {
         });
     }
 
-    @ReactMethod
-    public void seek(Double idVal, Double position, Promise promise) {
-        int id = idVal.intValue();
+    @Override
+    public void seek(double idVal, double position, Promise promise) {
+        int id = (int) idVal;
         new Handler(Looper.getMainLooper()).post(() -> {
             PlayerInstance instance = players.get(id);
             if (instance != null) {
@@ -310,13 +309,13 @@ public class ReactNativeAudioModule extends ReactContextBaseJavaModule {
 
     // ... Volume/Rate methods ...
 
-    @ReactMethod
-    public void setVolume(Double idVal, Double volume, Promise promise) {
-        int id = idVal.intValue();
+    @Override
+    public void setVolume(double idVal, double volume, Promise promise) {
+        int id = (int) idVal;
         new Handler(Looper.getMainLooper()).post(() -> {
             PlayerInstance instance = players.get(id);
             if (instance != null) {
-                instance.player.setVolume(volume.floatValue());
+                instance.player.setVolume((float) volume);
                 promise.resolve(null);
             } else {
                 promise.reject("not_found", "Player not found");
@@ -324,13 +323,13 @@ public class ReactNativeAudioModule extends ReactContextBaseJavaModule {
         });
     }
 
-    @ReactMethod
-    public void setRate(Double idVal, Double rate, Promise promise) {
-        int id = idVal.intValue();
+    @Override
+    public void setRate(double idVal, double rate, Promise promise) {
+        int id = (int) idVal;
         new Handler(Looper.getMainLooper()).post(() -> {
             PlayerInstance instance = players.get(id);
             if (instance != null) {
-                instance.player.setPlaybackSpeed(rate.floatValue());
+                instance.player.setPlaybackSpeed((float) rate);
                 promise.resolve(null);
             } else {
                 promise.reject("not_found", "Player not found");
@@ -338,9 +337,15 @@ public class ReactNativeAudioModule extends ReactContextBaseJavaModule {
         });
     }
 
-    @ReactMethod
-    public void destroyPlayer(Double idVal) {
-        int id = idVal.intValue();
+    @Override
+    public void setMetadata(double id, ReadableMap metadata, Promise promise) {
+        // No-op or TODO: Metadata update for Notif
+        promise.resolve(null);
+    }
+
+    @Override
+    public void destroyPlayer(double idVal) {
+        int id = (int) idVal;
         new Handler(Looper.getMainLooper()).post(() -> {
             PlayerInstance instance = players.remove(id);
             if (instance != null) {
@@ -356,9 +361,9 @@ public class ReactNativeAudioModule extends ReactContextBaseJavaModule {
         });
     }
 
-    @ReactMethod
-    public void setupNotification(Double idVal, ReadableMap config, Promise promise) {
-        int id = idVal.intValue();
+    @Override
+    public void setupNotification(double idVal, ReadableMap config, Promise promise) {
+        int id = (int) idVal;
         new Handler(Looper.getMainLooper()).post(() -> {
             PlayerInstance instance = players.get(id);
             if (instance != null) {
@@ -406,50 +411,10 @@ public class ReactNativeAudioModule extends ReactContextBaseJavaModule {
                                     })
                             .build();
 
-                    // Custom Control Dispatcher to intercept Next/Prev
-                    // Note: setControlDispatcher is deprecated in some versions or usually set on
-                    // the Player view,
-                    // but for NotificationManager we might need to use setCustomActionReceiver or
-                    // ensure we handle the commands via Player.XXX
-                    // Actually, the simpliest way for Media3 notification Next/Prev is to rely on
-                    // Player's seekToNext availability.
-                    // But our player has no playlist.
-                    // We must use setUseNextAction(true) manually and handle the command.
-
                     instance.notificationManager
                             .setUseNextAction(config.hasKey("hasNext") && config.getBoolean("hasNext"));
                     instance.notificationManager
                             .setUsePreviousAction(config.hasKey("hasPrevious") && config.getBoolean("hasPrevious"));
-
-                    // To handle the clicks, we need to add a listener to the player that handles
-                    // 'seekToNext'
-                    // OR assume the notification manager calls player.seekToNext() and we catch it?
-                    // No, invalid.
-
-                    // Correct approach: Use setUseNextActionInCompactView and customized dispatch?
-                    // Let's use a simpler hack for now:
-                    // We will not modify the Dispatcher heavily but Media3 is tricky here without a
-                    // ConcatenatingMediaSource.
-                    // Let's try setting the actions to true, and if clicked, the
-                    // player.seekToNext() is called.
-                    // We can override player.seekToNext() if we subclassed it, but we didn't.
-
-                    // Better approach for React Native Module:
-                    // Use `setControlDispatcher` on the NotificationManager (if available) or
-                    // `setCustomActionReceiver`.
-                    // Actually, `PlayerNotificationManager` DOES NOT have setControlDispatcher in
-                    // recent Media3 versions easily exposed for this logic without replacing the
-                    // whole UI.
-
-                    // RE-STRATEGY:
-                    // 1. Android Notification 'Next' button requires Player to claim to be able to
-                    // seek to next.
-                    // 2. OR we use Custom Actions "NEXT" and "PREV" instead of the built-in
-                    // semantics.
-
-                    // Let's stick to standard behavior:
-                    // When user clicks Next, Media3 calls player.seekToNext().
-                    // We can add a ForwardingPlayer to intercept this!
 
                     ExoPlayer originalPlayer = instance.player;
                     Player forwardingPlayer = new androidx.media3.common.ForwardingPlayer(originalPlayer) {
@@ -501,7 +466,7 @@ public class ReactNativeAudioModule extends ReactContextBaseJavaModule {
 
     // MARK: - Recorder
 
-    @ReactMethod
+    @Override
     public void prepareRecorder(String path, ReadableMap options, Promise promise) {
         try {
             if (recorder != null) {
@@ -534,7 +499,7 @@ public class ReactNativeAudioModule extends ReactContextBaseJavaModule {
         }
     }
 
-    @ReactMethod
+    @Override
     public void startRecording(Promise promise) {
         if (recorder != null) {
             try {
@@ -548,7 +513,7 @@ public class ReactNativeAudioModule extends ReactContextBaseJavaModule {
         }
     }
 
-    @ReactMethod
+    @Override
     public void stopRecording(Promise promise) {
         if (recorder != null) {
             try {
@@ -564,6 +529,18 @@ public class ReactNativeAudioModule extends ReactContextBaseJavaModule {
         }
     }
 
+    @Override
+    public void pauseRecording(Promise promise) {
+        // TODO: Implement
+        promise.resolve(null);
+    }
+
+    @Override
+    public void resumeRecording(Promise promise) {
+        // TODO: Implement
+        promise.resolve(null);
+    }
+
     // MARK: - Helpers
 
     private void sendEvent(String eventName, @Nullable WritableMap params) {
@@ -574,7 +551,7 @@ public class ReactNativeAudioModule extends ReactContextBaseJavaModule {
 
     // MARK: - Media Library
 
-    @ReactMethod
+    @Override
     public void getAudios(Promise promise) {
         new Thread(() -> {
             try {

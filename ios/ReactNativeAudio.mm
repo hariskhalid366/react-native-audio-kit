@@ -1,5 +1,9 @@
 #import "ReactNativeAudio.h"
 
+#ifdef RCT_NEW_ARCH_ENABLED
+#import "ReactNativeAudioSpec.h"
+#endif
+
 // Player model to hold instance data
 @interface AudioPlayerInstance : NSObject
 @property (nonatomic, strong) AVPlayer *player;
@@ -10,6 +14,12 @@
 @end
 
 @implementation AudioPlayerInstance
+@end
+
+@interface ReactNativeAudio ()
+#ifdef RCT_NEW_ARCH_ENABLED
+<NativeReactNativeAudioSpec>
+#endif
 @end
 
 @implementation ReactNativeAudio {
@@ -25,10 +35,13 @@ RCT_EXPORT_MODULE()
     for (NSNumber *key in _players) {
         AudioPlayerInstance *instance = _players[key];
         [instance.player pause];
-        [instance.player removeTimeObserver:instance.timeObserver];
-        [instance.playerItem removeObserver:self forKeyPath:@"status"];
+        if (instance.timeObserver) {
+            [instance.player removeTimeObserver:instance.timeObserver];
+        }
+        @try {
+            [instance.playerItem removeObserver:self forKeyPath:@"status"];
+        } @catch (NSException * __unused exception) {}
         [[NSNotificationCenter defaultCenter] removeObserver:self name:AVPlayerItemDidPlayToEndTimeNotification object:instance.playerItem];
-    }
     }
     [_players removeAllObjects];
     [[NSNotificationCenter defaultCenter] removeObserver:self];
@@ -113,7 +126,8 @@ RCT_EXPORT_MODULE()
     }
 }
 
-RCT_EXPORT_METHOD(preparePlayer:(nonnull NSNumber *)playerId url:(NSString *)urlStr options:(NSDictionary *)options resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject) {
+RCT_EXPORT_METHOD(preparePlayer:(double)idVal url:(NSString *)urlStr options:(NSDictionary *)options resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject) {
+    NSNumber *playerId = @(idVal);
     if (!urlStr) {
         reject(@"error", @"URL cannot be null", nil);
         return;
@@ -177,7 +191,8 @@ RCT_EXPORT_METHOD(preparePlayer:(nonnull NSNumber *)playerId url:(NSString *)url
 }
 
 // ... play, pause, stop, seek ... 
-RCT_EXPORT_METHOD(play:(nonnull NSNumber *)playerId resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject) {
+RCT_EXPORT_METHOD(play:(double)idVal resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject) {
+    NSNumber *playerId = @(idVal);
     AudioPlayerInstance *instance = _players[playerId];
     if (instance) {
         [instance.player play];
@@ -188,7 +203,8 @@ RCT_EXPORT_METHOD(play:(nonnull NSNumber *)playerId resolve:(RCTPromiseResolveBl
     }
 }
 
-RCT_EXPORT_METHOD(pause:(nonnull NSNumber *)playerId resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject) {
+RCT_EXPORT_METHOD(pause:(double)idVal resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject) {
+    NSNumber *playerId = @(idVal);
     AudioPlayerInstance *instance = _players[playerId];
     if (instance) {
         [instance.player pause];
@@ -199,7 +215,8 @@ RCT_EXPORT_METHOD(pause:(nonnull NSNumber *)playerId resolve:(RCTPromiseResolveB
     }
 }
 
-RCT_EXPORT_METHOD(stop:(nonnull NSNumber *)playerId resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject) {
+RCT_EXPORT_METHOD(stop:(double)idVal resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject) {
+    NSNumber *playerId = @(idVal);
      AudioPlayerInstance *instance = _players[playerId];
     if (instance) {
         [instance.player pause];
@@ -211,7 +228,8 @@ RCT_EXPORT_METHOD(stop:(nonnull NSNumber *)playerId resolve:(RCTPromiseResolveBl
     }
 }
 
-RCT_EXPORT_METHOD(seek:(nonnull NSNumber *)playerId position:(double)position resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject) {
+RCT_EXPORT_METHOD(seek:(double)idVal position:(double)position resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject) {
+    NSNumber *playerId = @(idVal);
     AudioPlayerInstance *instance = _players[playerId];
     if (instance) {
         [instance.player seekToTime:CMTimeMakeWithSeconds(position, 1000)];
@@ -221,27 +239,30 @@ RCT_EXPORT_METHOD(seek:(nonnull NSNumber *)playerId position:(double)position re
     }
 }
 
-RCT_EXPORT_METHOD(setVolume:(nonnull NSNumber *)playerId volume:(float)volume resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject) {
+RCT_EXPORT_METHOD(setVolume:(double)idVal volume:(double)volume resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject) {
+    NSNumber *playerId = @(idVal);
     AudioPlayerInstance *instance = _players[playerId];
     if (instance) {
-        instance.player.volume = volume;
+        instance.player.volume = (float)volume;
         resolve(nil);
     } else {
         reject(@"not_found", @"Player not found", nil);
     }
 }
 
-RCT_EXPORT_METHOD(setRate:(nonnull NSNumber *)playerId rate:(float)rate resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject) {
+RCT_EXPORT_METHOD(setRate:(double)idVal rate:(double)rate resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject) {
+    NSNumber *playerId = @(idVal);
     AudioPlayerInstance *instance = _players[playerId];
     if (instance) {
-        instance.player.rate = rate;
+        instance.player.rate = (float)rate;
         resolve(nil);
     } else {
         reject(@"not_found", @"Player not found", nil);
     }
 }
 
-RCT_EXPORT_METHOD(setMetadata:(nonnull NSNumber *)playerId metadata:(NSDictionary *)metadata resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject) {
+RCT_EXPORT_METHOD(setMetadata:(double)idVal metadata:(NSDictionary *)metadata resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject) {
+    NSNumber *playerId = @(idVal);
     // ... same as before
     NSMutableDictionary *nowPlayingInfo = [[NSMutableDictionary alloc] init];
     if (metadata[@"title"]) [nowPlayingInfo setObject:metadata[@"title"] forKey:MPMediaItemPropertyTitle];
@@ -258,7 +279,8 @@ RCT_EXPORT_METHOD(setMetadata:(nonnull NSNumber *)playerId metadata:(NSDictionar
     resolve(nil);
 }
 
-RCT_EXPORT_METHOD(destroyPlayer:(nonnull NSNumber *)playerId) {
+RCT_EXPORT_METHOD(destroyPlayer:(double)idVal) {
+    NSNumber *playerId = @(idVal);
     if (_players[playerId]) {
         [self cleanupPlayer:playerId];
         [_players removeObjectForKey:playerId];
@@ -285,7 +307,8 @@ RCT_EXPORT_METHOD(destroyPlayer:(nonnull NSNumber *)playerId) {
 
 // MARK: - Recorder Methods
 
-RCT_EXPORT_METHOD(setupNotification:(nonnull NSNumber *)playerId config:(NSDictionary *)config resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject) {
+RCT_EXPORT_METHOD(setupNotification:(double)idVal config:(NSDictionary *)config resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject) {
+    NSNumber *playerId = @(idVal);
     AudioPlayerInstance *instance = _players[playerId];
     if (!instance) {
         resolve(nil);
@@ -423,6 +446,16 @@ RCT_EXPORT_METHOD(stopRecording:(RCTPromiseResolveBlock)resolve reject:(RCTPromi
     } else {
         reject(@"no_recorder", @"Recorder not prepared", nil);
     }
+}
+
+RCT_EXPORT_METHOD(pauseRecording:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject) {
+    // TODO: Implement
+    resolve(nil);
+}
+
+RCT_EXPORT_METHOD(resumeRecording:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject) {
+    // TODO: Implement
+    resolve(nil);
 }
 
 // MARK: - Media Library
@@ -563,5 +596,13 @@ RCT_EXPORT_METHOD(getAudios:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRe
                            body:@{@"error": code, @"message": msg ?: @"Unknown"}];
     }
 }
+
+#ifdef RCT_NEW_ARCH_ENABLED
+- (std::shared_ptr<facebook::react::TurboModule>)getTurboModule:
+    (const facebook::react::ObjCTurboModule::InitParams &)params
+{
+    return std::make_shared<facebook::react::NativeReactNativeAudioSpecJSI>(params);
+}
+#endif
 
 @end

@@ -21,6 +21,16 @@ export interface Spec extends TurboModule {
   setupNotification(id: number, config: Object): Promise<void>;
   
   getAudios(): Promise<Array<Object>>;
+  
+  // Cache Management
+  setCacheConfig(config: Object): Promise<void>;
+  getCacheStatus(): Promise<Object>;
+  clearCache(): Promise<void>;
+  
+  // Equalizer
+  enableEqualizer(id: number, enabled: boolean): Promise<void>;
+  setEqualizerBand(id: number, bandIndex: number, gain: number): Promise<void>;
+  getEqualizerBands(id: number): Promise<Array<Object>>;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('ReactNativeAudio');

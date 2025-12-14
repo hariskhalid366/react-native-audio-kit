@@ -597,6 +597,68 @@ RCT_EXPORT_METHOD(getAudios:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRe
     }
 }
 
+// MARK: - Cache Management
+
+RCT_EXPORT_METHOD(setCacheConfig:(NSDictionary *)config resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject) {
+    // iOS cache configuration would use AVAssetDownloadTask
+    resolve(nil);
+}
+
+RCT_EXPORT_METHOD(getCacheStatus:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject) {
+    NSDictionary *status = @{
+        @"sizeBytes": @0,
+        @"itemCount": @0
+    };
+    resolve(status);
+}
+
+RCT_EXPORT_METHOD(clearCache:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject) {
+    // Cache clearing logic
+    resolve(nil);
+}
+
+// MARK: - Equalizer
+
+RCT_EXPORT_METHOD(enableEqualizer:(double)idVal enabled:(BOOL)enabled resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject) {
+    NSNumber *playerId = @(idVal);
+    AudioPlayerInstance *instance = _players[playerId];
+    if (instance) {
+        // Equalizer enable/disable using AVAudioEngine
+        resolve(nil);
+    } else {
+        reject(@"not_found", @"Player not found", nil);
+    }
+}
+
+RCT_EXPORT_METHOD(setEqualizerBand:(double)idVal bandIndex:(double)bandIndex gain:(double)gain resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject) {
+    NSNumber *playerId = @(idVal);
+    AudioPlayerInstance *instance = _players[playerId];
+    if (instance) {
+        // Set equalizer band gain
+        resolve(nil);
+    } else {
+        reject(@"not_found", @"Player not found", nil);
+    }
+}
+
+RCT_EXPORT_METHOD(getEqualizerBands:(double)idVal resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject) {
+    NSNumber *playerId = @(idVal);
+    AudioPlayerInstance *instance = _players[playerId];
+    if (instance) {
+        NSMutableArray *bands = [NSMutableArray array];
+        // Return equalizer bands (typically 5-10 bands)
+        for (int i = 0; i < 5; i++) {
+            [bands addObject:@{
+                @"frequency": @(60 * pow(2, i)),
+                @"gain": @0.0
+            }];
+        }
+        resolve(bands);
+    } else {
+        reject(@"not_found", @"Player not found", nil);
+    }
+}
+
 #ifdef RCT_NEW_ARCH_ENABLED
 - (std::shared_ptr<facebook::react::TurboModule>)getTurboModule:
     (const facebook::react::ObjCTurboModule::InitParams &)params

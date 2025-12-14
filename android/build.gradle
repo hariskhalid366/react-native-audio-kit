@@ -1,5 +1,6 @@
 // android/build.gradle
 
+
 // based on:
 //
 // * https://github.com/facebook/react-native/blob/0.60-stable/template/android/build.gradle
@@ -14,7 +15,7 @@
 // the minimum React Native version supported.
 def DEFAULT_COMPILE_SDK_VERSION = 34
 def DEFAULT_BUILD_TOOLS_VERSION = '34.0.0'
-def DEFAULT_MIN_SDK_VERSION = 21
+def DEFAULT_MIN_SDK_VERSION = 23
 def DEFAULT_TARGET_SDK_VERSION = 34
 
 def safeExtGet(prop, fallback) {
@@ -36,7 +37,7 @@ buildscript {
         dependencies {
             // This should reflect the Gradle plugin version used by
             // the minimum React Native version supported.
-            classpath 'com.android.tools.build:gradle:3.4.1'
+            classpath 'com.android.tools.build:gradle:8.1.1'
         }
     }
 }
@@ -49,6 +50,7 @@ android {
         targetSdkVersion safeExtGet('targetSdkVersion', DEFAULT_TARGET_SDK_VERSION)
         versionCode 1
         versionName "1.0"
+        buildConfigField "boolean", "IS_NEW_ARCHITECTURE_ENABLED", project.hasProperty("newArchEnabled") ? project.getProperty("newArchEnabled") : "false"
     }
     lintOptions {
         abortOnError false

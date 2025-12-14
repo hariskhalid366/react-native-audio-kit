@@ -2,13 +2,13 @@
 import { NativeAudio } from './native';
 
 export { NativeAudio };
-export * from './events';
 
 export * from './types';
 export * from './AudioPlayer';
 export * from './AudioRecorder';
 export * from './hooks';
 export * from './AudioQueue';
+export { CacheManager } from './CacheManager';
 
 // Helper to access native media methods
 export async function getAllAudios(): Promise<import('./types').AudioAsset[]> {
@@ -27,7 +27,7 @@ export async function getAlbums(): Promise<import('./types').Album[]> {
         name: key,
         artist: audio.artist,
         artwork: audio.artwork,
-        songs: []
+        songs: [],
       };
     }
     albums[key].songs.push(audio);
@@ -36,12 +36,13 @@ export async function getAlbums(): Promise<import('./types').Album[]> {
   return Object.values(albums);
 }
 
+// Search helper
 export async function searchAudios(query: string): Promise<import('./types').AudioAsset[]> {
   const audios = await getAllAudios();
   const lowerQuery = query.toLowerCase();
-  
   return audios.filter(audio => 
-    (audio.title && audio.title.toLowerCase().includes(lowerQuery)) ||
-    (audio.artist && audio.artist.toLowerCase().includes(lowerQuery))
+    audio.title.toLowerCase().includes(lowerQuery) ||
+    audio.artist.toLowerCase().includes(lowerQuery) ||
+    audio.album.toLowerCase().includes(lowerQuery)
   );
 }

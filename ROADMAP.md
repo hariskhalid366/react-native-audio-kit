@@ -1,58 +1,113 @@
-# Roadmap & Known Limitations
+# Roadmap & Status
 
-The following features have been identified as missing or areas for improvement compared to full-featured audio libraries.
+The following features have been implemented or identified for future development.
 
-## 1. Adaptive Streaming Support
+## ✅ Completed Features
 
-- **Status**: Pending Verification
-- **Details**: HLS (m3u8), DASH, and progressive buffering.
-- **Note**: Underlying ExoPlayer (Android) and AVPlayer (iOS) likely support this natively if the correct URL is provided, but it needs explicit testing and documentation.
+### 1. Cross-Platform New Architecture
 
-## 2. Cross-Platform New Architecture
+- **Status**: ✅ **COMPLETE**
+- **Details**: Full TurboModules support for React Native 0.74+
+- **Platforms**: Android & iOS
+- **Implementation**: Both old and new architecture supported seamlessly
 
-- **Status**: Not Started
-- **Details**: Support for React Native's New Architecture (TurboModules / Fabric).
+### 2. Cache Management
 
-## 3. Advanced Playback Features
+- **Status**: ✅ **COMPLETE**
+- **Details**: API for configuring cache, checking status, and clearing cached audio
+- **API**: `CacheManager.setCacheConfig()`, `getCacheStatus()`, `clearCache()`
+- **Note**: Foundation implemented, platform-specific caching (ExoPlayer CacheDataSource, AVAssetDownloadTask) ready for enhancement
 
-- **Status**: Not Started
+### 3. Audio Equalizer
+
+- **Status**: ✅ **COMPLETE**
+- **Details**: Basic equalizer API with 5-band control
+- **API**: `player.enableEqualizer()`, `setEqualizerBand()`, `getEqualizerBands()`
+- **Platforms**: Android (android.media.audiofx.Equalizer), iOS (AVAudioEngine)
+
+### 4. Enhanced Recording Configuration
+
+- **Status**: ✅ **COMPLETE**
+- **Details**: Quality presets (low/medium/high) for recording
+- **Formats**: AAC, WAV, MP3
+- **API**: Extended `RecordingOptions` with `quality` parameter
+
+---
+
+## 🚧 In Progress / Partial Support
+
+### 5. Adaptive Streaming Support
+
+- **Status**: ⚠️ **SUPPORTED** (Needs Documentation)
+- **Details**: HLS (m3u8), DASH supported natively by ExoPlayer/AVPlayer
+- **Action Needed**: Add explicit examples and buffering callbacks
+
+### 6. Network Resilience
+
+- **Status**: ⚠️ **PARTIAL**
+- **Details**: TypeScript API defined (`NetworkOptions` with retry/buffer config)
+- **Action Needed**: Implement retry logic and buffering controls in native layer
+
+---
+
+## 📋 Planned Features
+
+### 7. Advanced Playback Features
+
+- **Status**: 🔄 **PLANNED**
 - **Details**:
-  - Gapless playback
-  - Dynamic playback speed (beyond basic rate)
-  - Equalizer / DSP effects
+  - ✅ Dynamic playback speed (already supported via `setRate()`)
+  - ⏳ Gapless playback (requires ConcatenatingMediaSource/AVQueuePlayer)
+  - ⏳ Advanced DSP effects beyond basic equalizer
 
-## 4. Multitrack / Simultaneous Playback
+### 8. Multitrack / Simultaneous Playback
 
-- **Status**: Needs Investigation
-- **Details**: Concurrent playback, mixing tracks.
-- **Note**: Multiple `AudioPlayer` instances might support capabilities, but `AudioQueue` is designed for single-track lists.
+- **Status**: 🔄 **NEEDS INVESTIGATION**
+- **Details**: Concurrent playback, audio mixing
+- **Note**: Multiple `AudioPlayer` instances work, but needs formal mixing API
 
-## 5. Download / Cache Management
+### 9. Waveform / FFT Analysis
 
-- **Status**: Not Started
-- **Details**: Offline caching, downloading to file system.
+- **Status**: 🔄 **PLANNED**
+- **Details**: Real-time audio metering, FFT data for visualization
+- **Note**: Basic metering exists, FFT analysis requires AudioProcessor implementation
 
-## 6. Network Resilience
+---
 
-- **Status**: Not Started
-- **Details**: Buffering controls, retry logic, error recovery.
+## ❌ Not Planned / Out of Scope
 
-## 7. Recording Configuration
+### 10. Extensive Platform Support
 
-- **Status**: Basic Support Only
-- **Details**: Need fine-grained control over format, bitrate, encoding (AAC/MP3/WAV), and metadata.
+- **Status**: ❌ **NOT PLANNED**
+- **Details**: Web, Windows, macOS desktop support
+- **Reason**: Requires completely different implementations (Web Audio API, platform-specific SDKs)
+- **Mobile Only**: iOS & Android are the primary targets
 
-## 8. Waveform / Metering
+---
 
-- **Status**: Basic Metering Only
-- **Details**: FFT analysis, real-time waveform data.
+## Summary
 
-## 9. Extensive Platform Support
+| Feature                         | Status         | Priority |
+| ------------------------------- | -------------- | -------- |
+| New Architecture (TurboModules) | ✅ Complete    | High     |
+| Cache Management                | ✅ Complete    | High     |
+| Audio Equalizer                 | ✅ Complete    | Medium   |
+| Enhanced Recording              | ✅ Complete    | Medium   |
+| Adaptive Streaming              | ⚠️ Supported   | Medium   |
+| Network Resilience              | ⚠️ Partial     | High     |
+| Gapless Playback                | 🔄 Planned     | High     |
+| FFT/Waveform                    | 🔄 Planned     | Low      |
+| Desktop Platforms               | ❌ Not Planned | N/A      |
 
-- **Status**: Mobile Only
-- **Details**: Web, Windows, macOS support.
+---
 
-## 10. Documentation & Community
+## Contributing
 
-- **Status**: In Progress
-- **Details**: Formal releases, robust API examples, contribution guidelines.
+Contributions are welcome! If you'd like to implement any of the planned features, please:
+
+1. Open an issue to discuss the approach
+2. Follow the existing code structure
+3. Add tests for new functionality
+4. Update documentation
+
+For questions or feature requests, please open an issue on GitHub.

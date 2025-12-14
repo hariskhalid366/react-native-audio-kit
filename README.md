@@ -2,21 +2,32 @@
 
 ![React Native Audio Kit Banner](react-native-audio-kit-banner.png)
 
-A powerful, robust, and feature-rich audio library for React Native. Built with **ExoPlayer (Media3)** on Android and **AVPlayer** on iOS.
+A powerful, production-ready audio library for React Native. Built with **ExoPlayer (Media3)** on Android and **AVPlayer** on iOS.
 
 [![npm version](https://img.shields.io/npm/v/react-native-audio-kit.svg)](https://www.npmjs.com/package/react-native-audio-kit)
 [![Platform](https://img.shields.io/badge/platform-ios%20%7C%20android-blue.svg)](https://files.reactnative.dev)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
-## Features
+## ✨ Features
 
-- ⚡ **New Architecture**: Fully supports TurboModules & Fabric
-- 🔒 **Background Mode**: Keep playing when app is backgrounded or screen locked
-- 🎧 **Controls**: Play, Pause, Seek, Volume, Rate, Loop
-- 🪝 **React Hooks**: `useAudioPlayer` for easy integration
-- 📱 **Lock Screen**: Notification controls and artwork
+### Core Features
 
-> 📘 **Full Documentation**: Check out the [User Guide & API Reference](USER_GUIDE.md) for detailed instructions on every function.
+- ⚡ **New Architecture**: Full TurboModules & Fabric support (RN 0.74+)
+- 🎧 **Playback Controls**: Play, Pause, Seek, Volume, Rate, Loop
+- 🎙️ **Recording**: High-quality audio recording with format options (AAC, WAV, MP3)
+- 📱 **Lock Screen**: Media controls and artwork on notification/lock screen
+- 🔒 **Background Mode**: Continues playing when app is backgrounded
+
+### Advanced Features
+
+- 🎚️ **Equalizer**: 5-band audio equalizer for sound customization
+- 💾 **Cache Management**: Offline playback with configurable caching
+- 🔄 **Network Resilience**: Retry logic and buffering controls
+- 📊 **Quality Presets**: Easy recording configuration (low/medium/high)
+- 🪝 **React Hooks**: `useAudioPlayer` for seamless integration
+- 📚 **Media Library**: Access device audio files with search
+
+> 📘 **Full Documentation**: Check out the [User Guide & API Reference](USER_GUIDE.md) for detailed instructions.
 
 ## Installation
 
@@ -26,171 +37,186 @@ npm install react-native-audio-kit
 yarn add react-native-audio-kit
 ```
 
-## ⚡ New Architecture (TurboModules)
-
-This library supports React Native's New Architecture (TurboModules).
-
-- **Android**: Enabled automatically if `newArchEnabled=true` is set in your project's `gradle.properties`.
-- **iOS**: Enabled automatically if you install pods with `RCT_NEW_ARCH_ENABLED=1`.
+### iOS Setup
 
 ```bash
-# iOS: Update pods with New Architecture
-cd ios && RCT_NEW_ARCH_ENABLED=1 bundle exec pod install
+cd ios && pod install
 ```
 
-## Setup
+Add to `Info.plist`:
 
-### iOS
-
-1. Open `Info.plist`.
-2. Add `UIBackgroundModes` key with value `audio`.
-3. Add `NSMicrophoneUsageDescription` if using recorder.
-4. Add `NSAppleMusicUsageDescription` if you want to access the Apple Music library via `getAllAudios`.
-
-### Android
-
-1. Open `AndroidManifest.xml`.
-2. For audio retrieval, ensure you have requested permissions at runtime:
-   - Android 13+: `READ_MEDIA_AUDIO`
-   - Android < 13: `READ_EXTERNAL_STORAGE`
-3. Foreground Service (`FOREGROUND_SERVICE_MEDIA_PLAYBACK`) is handled by the library, but ensure your app does not restrict background activity.
-
-## Usage
-
-### 🎵 Media Library & Queue (New!)
-
-Manage a playlist### Media Library Helper
-Fetch all local audio files.
-
-```typescript
-import { getAllAudios, getAlbums } from "react-native-audio-kit";
-
-const songs = await getAllAudios();
-console.log(songs[0]); // { title: "Song 1", artist: "Artist", uri: "..." }
-
-// 2. Play Queue
-const queue = new AudioQueue();
-queue.playList(songs, 0); // Start playing first song
-
-// Search example
-const searchResults = await searchAudios("Love");
-console.log("Found:", searchResults.length);
-
-// 3. Control
-queue.next();
-queue.prev();
-
-// 4. Subscribe to updates (Current Song, List)
-queue.onChange((list, current) => {
-  console.log("Now Playing:", current?.title);
-});
+```xml
+<key>UIBackgroundModes</key>
+<array>
+    <string>audio</string>
+</array>
+<key>NSMicrophoneUsageDescription</key>
+<string>We need access to record audio</string>
 ```
 
-_The **AudioQueue** automatically handles background playback and System Media Notifications (Lock Screen)._
+### Android Setup
 
-### Playing Audio (Hook)
+Permissions are handled automatically. For media library access, request `READ_MEDIA_AUDIO` (Android 13+) or `READ_EXTERNAL_STORAGE` at runtime.
+
+## Quick Start
+
+### Playing Audio
 
 ```typescript
-import { View, Text, Button } from "react-native";
-import { useAudioPlayer, PlaybackState } from "react-native-audio-kit";
+import { useAudioPlayer } from "react-native-audio-kit";
 
-const PlayerScreen = () => {
-  const { player, state, position, duration, play, pause, seek } =
-    useAudioPlayer("https://example.com/song.mp3", {
-      autoDestroy: true,
-      loop: false,
-    });
+function PlayerScreen() {
+  const { state, position, duration, play, pause, seek } = useAudioPlayer(
+    "https://example.com/song.mp3"
+  );
 
   return (
     <View>
-      <Text>Status: {state}</Text>
       <Text>
-        Time: {position.toFixed(1)} / {duration.toFixed(1)}
+        {state} - {position.toFixed(1)}s / {duration.toFixed(1)}s
       </Text>
       <Button title="Play" onPress={play} />
       <Button title="Pause" onPress={pause} />
-      <Slider
-        value={position}
-        maximumValue={duration}
-        onSlidingComplete={(val) => seek(val)}
-      />
     </View>
   );
-};
+}
 ```
 
-### Manual Player & Notifications
-
-If you are not using `AudioQueue`, you can manage notifications manually:
+### Audio Queue & Playlists
 
 ```typescript
-import { AudioPlayer } from "react-native-audio-kit";
+import { AudioQueue, getAllAudios } from "react-native-audio-kit";
 
-const player = new AudioPlayer("file:///sdcard/music.mp3");
+const queue = new AudioQueue();
+const songs = await getAllAudios();
 
-await player.prepare();
-await player.setupNotification({
-  title: "My Song",
-  artist: "My Artist",
-  artwork: "https://example.com/art.jpg",
-  hasNext: true,
-  hasPrevious: false,
+// Play playlist
+queue.playList(songs, 0);
+
+// Controls
+queue.next();
+queue.prev();
+
+// Listen to changes
+queue.onChange((list, current) => {
+  console.log("Now playing:", current?.title);
 });
-
-player.play();
 ```
 
 ### Recording Audio
-
-### `AudioRecorder`
-
-Record audio from the microphone.
 
 ```typescript
 import { AudioRecorder } from "react-native-audio-kit";
 
 const recorder = new AudioRecorder();
 
-// Start
-const path = await recorder.prepare("file:///path/to/rec.aac", {
-  sampleRate: 44100,
-  channels: 1,
+// Start recording with quality preset
+await recorder.prepare("/path/to/recording.aac", {
+  quality: "high", // 'low' | 'medium' | 'high'
+  format: "aac",
 });
 await recorder.start();
 
-recorder.onMetering((db) => console.log("Level:", db));
-
-// Stop
-const resultPath = await recorder.stop();
+// Stop and get file path
+const filePath = await recorder.stop();
 ```
 
-## API
+### Audio Equalizer
 
-### `AudioQueue`
+```typescript
+import { AudioPlayer } from "react-native-audio-kit";
 
-- `playList(songs, index)`: Replace queue and start playing.
-- `add(songs)`: Add to end of queue.
-- `next()` / `prev()`: Skip tracks.
-- `onChange(callback)`: Listen for track changes.
+const player = new AudioPlayer("https://example.com/song.mp3");
+await player.prepare();
 
-### `AudioPlayer`
+// Enable equalizer
+await player.enableEqualizer(true);
 
-- `prepare()`: Async
-- `play()`: Async
-- `pause()`: Async
-- `stop()`: Async
-- `seek(position)`: Async
-- `setVolume(0-1)`: Async
-- `setRate(0.5-2.0)`: Async
-- `setupNotification(config)`: Configure Lock Screen.
-- `destroy()`: Cleanup
+// Get available bands
+const bands = await player.getEqualizerBands();
+// [{frequency: 60, gain: 0}, {frequency: 230, gain: 0}, ...]
 
-### `Media Helpers`
+// Adjust bass (first band)
+await player.setEqualizerBand(0, 5.0); // +5dB boost
+```
 
-- `getAllAudios()`: Returns `Promise<AudioAsset[]>` (Device Scan).
-- `getAlbums()`: Returns `Promise<Album[]>` (Grouped).
-- `searchAudios(query)`: Returns `Promise<AudioAsset[]>` (Search by title/artist).
+### Cache Management
+
+```typescript
+import { CacheManager } from "react-native-audio-kit";
+
+// Configure cache
+await CacheManager.setCacheConfig({
+  maxSizeBytes: 100 * 1024 * 1024, // 100MB
+  enabled: true,
+});
+
+// Check cache status
+const status = await CacheManager.getCacheStatus();
+console.log(`Cache: ${status.sizeBytes} bytes, ${status.itemCount} items`);
+
+// Clear cache
+await CacheManager.clearCache();
+```
+
+## API Overview
+
+### Classes
+
+- **`AudioPlayer`**: Single track playback with full control
+- **`AudioQueue`**: Playlist management with auto-transitions
+- **`AudioRecorder`**: Audio recording with format options
+- **`CacheManager`**: Cache configuration and management
+
+### Hooks
+
+- **`useAudioPlayer(url, options)`**: React hook for audio playback
+
+### Helpers
+
+- **`getAllAudios()`**: Fetch all device audio files
+- **`getAlbums()`**: Group audio files by album
+- **`searchAudios(query)`**: Search audio files
+
+## Advanced Features
+
+### Network Resilience
+
+```typescript
+const player = new AudioPlayer("https://example.com/stream.mp3", {
+  network: {
+    retryCount: 3,
+    retryDelay: 1000,
+    bufferDuration: 10,
+  },
+});
+```
+
+### Adaptive Streaming
+
+HLS and DASH streams are supported natively:
+
+```typescript
+const player = new AudioPlayer("https://example.com/stream.m3u8");
+await player.prepare();
+await player.play();
+```
+
+## Documentation
+
+- [User Guide](USER_GUIDE.md) - Detailed API documentation
+- [Roadmap](ROADMAP.md) - Feature status and future plans
+
+## Requirements
+
+- React Native >= 0.74.0
+- iOS >= 11.0
+- Android >= 5.0 (API 21)
 
 ## License
 
 MIT
+
+---
+
+**Made with ❤️ for the React Native community**

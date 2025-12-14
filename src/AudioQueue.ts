@@ -1,5 +1,5 @@
 import { AudioPlayer } from './AudioPlayer';
-import { AudioEventEmitter } from './index';
+import { AudioEventEmitter } from './events';
 import { AudioAsset, PlaybackState } from './types';
 
 export class AudioQueue {
@@ -82,16 +82,16 @@ export class AudioQueue {
     // Remote Command Listeners
     // We must clean these up when the player is destroyed or track changes.
     const remoteSubs = [
-      AudioEventEmitter.addListener('AudioPlayerEvent.RemotePlay', (evt) => {
+      AudioEventEmitter.addListener('AudioPlayerEvent.RemotePlay', (evt: any) => {
         if (evt.id === this.player?.id) this.player?.play();
       }),
-      AudioEventEmitter.addListener('AudioPlayerEvent.RemotePause', (evt) => {
+      AudioEventEmitter.addListener('AudioPlayerEvent.RemotePause', (evt: any) => {
         if (evt.id === this.player?.id) this.player?.pause();
       }),
-      AudioEventEmitter.addListener('AudioPlayerEvent.RemoteNext', (evt) => {
+      AudioEventEmitter.addListener('AudioPlayerEvent.RemoteNext', (evt: any) => {
         if (evt.id === this.player?.id) this.next();
       }),
-      AudioEventEmitter.addListener('AudioPlayerEvent.RemotePrevious', (evt) => {
+      AudioEventEmitter.addListener('AudioPlayerEvent.RemotePrevious', (evt: any) => {
         if (evt.id === this.player?.id) this.prev();
       }),
     ];

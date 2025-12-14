@@ -97,6 +97,19 @@ export class AudioPlayer {
     return () => sub.remove();
   }
 
+  // Equalizer Methods
+  async enableEqualizer(enabled: boolean): Promise<void> {
+    return NativeAudio.enableEqualizer(this.id, enabled);
+  }
+
+  async setEqualizerBand(bandIndex: number, gain: number): Promise<void> {
+    return NativeAudio.setEqualizerBand(this.id, bandIndex, gain);
+  }
+
+  async getEqualizerBands(): Promise<Array<{ frequency: number; gain: number }>> {
+    return NativeAudio.getEqualizerBands(this.id);
+  }
+
   destroy(): void {
     this.subscriptions.forEach(sub => sub.remove());
     this.subscriptions = [];

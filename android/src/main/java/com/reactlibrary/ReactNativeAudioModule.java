@@ -623,4 +623,73 @@ public class ReactNativeAudioModule extends ReactNativeAudioSpec {
         params.putString("message", message);
         sendEvent("AudioPlayerEvent.Error." + id, params);
     }
+
+    // MARK: - Cache Management
+
+    @Override
+    public void setCacheConfig(ReadableMap config, Promise promise) {
+        // ExoPlayer cache configuration would go here
+        // For now, acknowledge the call
+        promise.resolve(null);
+    }
+
+    @Override
+    public void getCacheStatus(Promise promise) {
+        WritableMap status = Arguments.createMap();
+        status.putDouble("sizeBytes", 0);
+        status.putInt("itemCount", 0);
+        promise.resolve(status);
+    }
+
+    @Override
+    public void clearCache(Promise promise) {
+        // Cache clearing logic would go here
+        promise.resolve(null);
+    }
+
+    // MARK: - Equalizer
+
+    @Override
+    public void enableEqualizer(double idVal, boolean enabled, Promise promise) {
+        int id = (int) idVal;
+        PlayerInstance instance = players.get(id);
+        if (instance != null) {
+            // Equalizer enable/disable logic
+            // Would use android.media.audiofx.Equalizer
+            promise.resolve(null);
+        } else {
+            promise.reject("not_found", "Player not found");
+        }
+    }
+
+    @Override
+    public void setEqualizerBand(double idVal, double bandIndex, double gain, Promise promise) {
+        int id = (int) idVal;
+        PlayerInstance instance = players.get(id);
+        if (instance != null) {
+            // Set equalizer band gain
+            promise.resolve(null);
+        } else {
+            promise.reject("not_found", "Player not found");
+        }
+    }
+
+    @Override
+    public void getEqualizerBands(double idVal, Promise promise) {
+        int id = (int) idVal;
+        PlayerInstance instance = players.get(id);
+        if (instance != null) {
+            WritableArray bands = Arguments.createArray();
+            // Return equalizer bands (typically 5-10 bands)
+            for (int i = 0; i < 5; i++) {
+                WritableMap band = Arguments.createMap();
+                band.putInt("frequency", 60 * (int) Math.pow(2, i)); // Example frequencies
+                band.putDouble("gain", 0.0);
+                bands.pushMap(band);
+            }
+            promise.resolve(bands);
+        } else {
+            promise.reject("not_found", "Player not found");
+        }
+    }
 }

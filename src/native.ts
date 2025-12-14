@@ -28,6 +28,16 @@ export interface NativeAudioType {
   setupNotification(id: number, config: any): Promise<void>;
   
   getAudios(): Promise<AudioAsset[]>;
+  
+  // Cache Management
+  setCacheConfig(config: any): Promise<void>;
+  getCacheStatus(): Promise<{ sizeBytes: number; itemCount: number }>;
+  clearCache(): Promise<void>;
+  
+  // Equalizer
+  enableEqualizer(id: number, enabled: boolean): Promise<void>;
+  setEqualizerBand(id: number, bandIndex: number, gain: number): Promise<void>;
+  getEqualizerBands(id: number): Promise<Array<{ frequency: number; gain: number }>>;
 }
 
 export const NativeAudio: NativeAudioType =

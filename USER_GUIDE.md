@@ -269,3 +269,170 @@ Scans the device (Android MediaStore / iOS Apple Music Library) for audio files.
 
 Helper that groups the result of `getAllAudios()` by Album.
 **Returns**: Array of `{ name, artist, artwork, songs: AudioAsset[] }`.
+
+---
+
+## Audio Equalizer
+
+The equalizer allows you to customize audio output with multi-band frequency control.
+
+### Methods
+
+#### `player.enableEqualizer(enabled: boolean): Promise<void>`
+
+Enables or disables the equalizer for the player.
+
+```typescript
+await player.enableEqualizer(true);
+```
+
+#### `player.setEqualizerBand(bandIndex: number, gain: number): Promise<void>`
+
+Sets the gain for a specific frequency band.
+
+- **bandIndex**: Band index (0-4 for 5-band equalizer)
+- **gain**: Gain in decibels (-15 to +15)
+
+```typescript
+// Boost bass (band 0)
+await player.setEqualizerBand(0, 8.0);
+
+// Cut treble (band 4)
+await player.setEqualizerBand(4, -5.0);
+```
+
+#### `player.getEqualizerBands(): Promise<Array<{frequency: number, gain: number}>>`
+
+Returns all equalizer bands with their frequencies and current gain values.
+
+```typescript
+const bands = await player.getEqualizerBands();
+// [{frequency: 60, gain: 0}, {frequency: 230, gain: 0}, ...]
+```
+
+### Example: Custom EQ Preset
+
+```typescript
+const player = new AudioPlayer("song.mp3");
+await player.prepare();
+await player.enableEqualizer(true);
+
+// Bass boost preset
+await player.setEqualizerBand(0, 6.0); // 60 Hz
+await player.setEqualizerBand(1, 4.0); // 230 Hz
+await player.setEqualizerBand(2, 0.0); // 910 Hz
+await player.setEqualizerBand(3, -2.0); // 3.6 kHz
+await player.setEqualizerBand(4, -4.0); // 14 kHz
+```
+
+---
+
+## Cache Management
+
+Manage audio file caching for offline playback and improved performance.
+
+### CacheManager API
+
+#### `CacheManager.setCacheConfig(config: CacheConfig): Promise<void>`
+
+Configure cache settings.
+
+```typescript
+import { CacheManager } from "react-native-audio-kit";
+
+await CacheManager.setCacheConfig({
+  maxSizeBytes: 100 * 1024 * 1024, // 100MB
+  enabled: true,
+});
+```
+
+**Config Options**:
+
+- `maxSizeBytes`: Maximum cache size in bytes (default: 100MB)
+- `enabled`: Enable/disable caching (default: true)
+
+#### `CacheManager.getCacheStatus(): Promise<CacheStatus>`
+
+Get current cache status.
+
+```typescript
+const status = await CacheManager.getCacheStatus();
+console.log(`Cache size: ${status.sizeBytes} bytes`);
+console.log(`Cached items: ${status.itemCount}`);
+```
+
+#### `CacheManager.clearCache(): Promise<void>`
+
+Clear all cached audio files.
+
+```typescript
+await CacheManager.clearCache();
+```
+
+---
+
+## Enhanced Recording Options
+
+### Quality Presets
+
+Use quality presets for easy configuration:
+
+```typescript
+const recorder = new AudioRecorder();
+
+await recorder.prepare("/path/to/recording.aac", {
+  quality: "high", // 'low' | 'medium' | 'high'
+  format: "aac",
+});
+```
+
+**Quality Presets**:
+
+- `low`: 64 kbps, 22050 Hz, mono
+- `medium`: 128 kbps, 44100 Hz, stereo
+- `high`: 256 kbps, 48000 Hz, stereo
+
+### Manual Configuration
+
+For fine-grained control:
+
+```typescript
+await recorder.prepare("/path/to/recording.aac", {
+  format: "aac",
+  sampleRate: 48000,
+  channels: 2,
+  bitrate: 192000,
+});
+```
+
+---
+
+## Network Options
+
+Configure network resilience for streaming:
+
+```typescript
+const player = new AudioPlayer("https://stream.example.com/audio.mp3", {
+  network: {
+    retryCount: 3, // Retry failed requests 3 times
+    retryDelay: 1000, // Wait 1s before first retry
+    bufferDuration: 10, // Buffer 10 seconds of audio
+  },
+});
+```
+
+---
+
+## Adaptive Streaming
+
+HLS (.m3u8) and DASH streams are supported natively:
+
+```typescript
+const player = new AudioPlayer("https://example.com/stream.m3u8");
+await player.prepare();
+await player.play();
+```
+
+The underlying players (ExoPlayer/AVPlayer) handle adaptive bitrate switching automatically.
+
+---

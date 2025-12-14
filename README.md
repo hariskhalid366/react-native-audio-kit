@@ -1,5 +1,7 @@
 # React Native Audio Kit 🎵
 
+![React Native Audio Kit Banner](react-native-audio-kit.png)
+
 A powerful, robust, and feature-rich audio library for React Native. Built with **ExoPlayer (Media3)** on Android and **AVPlayer** on iOS.
 
 [![npm version](https://img.shields.io/npm/v/react-native-audio-kit.svg)](https://www.npmjs.com/package/react-native-audio-kit)
